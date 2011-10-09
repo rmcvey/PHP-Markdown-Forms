@@ -33,13 +33,13 @@ phones = [] Android [x] iPhone [x] Blackberry
 * comments = "Enter your comments here"
 
 ##Example Markup
----`
+---
 form_title=This is my form  
 form_header=Fill out this form and magic will happen  
 form_footer=Thanks for filling out our form  
-First Name*=__[50]  
-Last Name*=__[50]  
-Phone=__(444) 555 - 5555  
+First Name*=____[50]  
+Last Name*=____[50]  
+Phone=____(444) 555 - 5555  
 Address=__  
 City=__  
 State=__[2]  
@@ -47,4 +47,3 @@ Are you interested?*= (x) yes () no () not sure
 How many do you want?*= [x] 10 [] 5 [] 2 [] 0  
 When do you want it?={(Now), Tomorrow, Never}  
 Comments=”Enter any comments you have for us”
-`

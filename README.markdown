@@ -1,9 +1,9 @@
 #Markdown
 ##Form Metadata
 ---
-form_title=My Form Title
-form_header=Fill out this great form, it is super great
-form_footer=Thanks
+* form_title=My Form Title
+* form_header=Fill out this great form, it is super great
+* form_footer=Thanks
 
 ##Line Format: Asterisk after LABEL indicates that a field is required
 ---
@@ -23,29 +23,27 @@ phones = [] Android [x] iPhone [x] Blackberry
 
 ##Text Input: the underscore indicates a text input, text following an underscore is used as default text, integer in square brackets indicates maxlength
 ---
-name = _[50]
-Form Name = _Enter your form name
-name* = _Default text[50]
+* name = _[50]
+* Form Name = _Enter your form name
+* name* = _Default text[50]
 
 ##Textarea: Quotes indicate textarea, text within quotes is used as default text
 ---
-Comments = ""
-comments = "Enter your comments here"
+* Comments = ""
+* comments = "Enter your comments here"
 
 ##Example Markup
 ---
-`
-form_title=This is my form
-form_header=Fill out this form and magic will happen
-form_footer=Thanks for filling out our form
-First Name*=__[50]
-Last Name*=__[50]
-Phone=__(444) 555 - 5555
-Address=__
-City=__
-State=__[2]
-Are you interested?*= (x) yes () no () not sure
-How many do you want?*= [x] 10 [] 5 [] 2 [] 0
-When do you want it?={(Now), Tomorrow, Never}
+form_title=This is my form  
+form_header=Fill out this form and magic will happen  
+form_footer=Thanks for filling out our form  
+First Name*=__[50]  
+Last Name*=__[50]  
+Phone=__(444) 555 - 5555  
+Address=__  
+City=__  
+State=__[2]  
+Are you interested?*= (x) yes () no () not sure  
+How many do you want?*= [x] 10 [] 5 [] 2 [] 0  
+When do you want it?={(Now), Tomorrow, Never}  
 Comments=”Enter any comments you have for us”
-`

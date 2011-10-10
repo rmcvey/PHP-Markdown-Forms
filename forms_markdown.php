@@ -1,7 +1,7 @@
 <?php
 /*
 EXAMPLE SYNTAX/USAGE
------------------------------*/
+-----------------------------
 $content =<<<BEGIN
 form_title=This is my form
 form_header=Fill out this form and magic will happen
@@ -21,7 +21,7 @@ BEGIN;
 
 $markdown = new forms_markdown($content);
 print_r($markdown->toHTML());
-
+*/
 
 /**
 *	Markdown Class, front end for markdown_parser

@@ -3,10 +3,10 @@
 EXAMPLE SYNTAX/USAGE
 -----------------------------
 $content =<<<BEGIN
+form=action:processor.php|onsubmit:return check(this)|class:validate form|id:my_form|method:post
 form_title=This is my form
 form_header=Fill out this form and magic will happen
 form_footer=Thanks for filling out our form
-form=action:processor.php|onsubmit:return check(this)|class:validate form|id:my_form
 First Name*=__[50]
 Last Name*=_____[50]
 Phone*=__(444) 555 - 5555
@@ -84,6 +84,7 @@ class markdown_parser{
 		'title' => '/form_title[\s]*=[\s]*([a-zA-Z\/<>0-9\s\?\#\&\;]*)/',
 		'header' => '/form_header[\s]*=[\s]*([a-zA-Z0-9\s\?\#\&\;]*)/',
 		'footer' => '/form_footer[\s]*=[\s]*([a-zA-Z0-9\s\?\#\&\;]*)/',
+		'form' => '/form[\s]*=(.*)/',
 		// element patterns
 		'select_list' => '/{(.*)}/',
 		'select_default' => '/\((.*)\)/',
@@ -96,7 +97,12 @@ class markdown_parser{
 	*	@param html_templates HTML templates that are loaded with parsed data on __toHTML call
 	*/
 	public $html_templates = array(
-		'form'  => '<div id="md_form">%s</div>',
+		'container' => '<div id="md_form">
+				%s
+			</div>',
+		'form' => '<form%s>
+				%s
+			</form>',
 		'title' => '<h3>%s</h3>',
 		'header' => '<p>%s</p>',
 		'footer' => '<p>%s</p>',
@@ -288,9 +294,20 @@ class markdown_parser{
 				$data['footer']
 			);
 		}
+		if(isset($data['form'])){
+			$form_attributes = "";
+			foreach($data['form'] as $key => $val){
+				$form_attributes .= " $key=\"$val\"";
+			}
+		}
 		return sprintf(
-			$this->html_templates['form'],
-			implode("\n", $rows)
+			$this->html_templates['container'],
+			sprintf(
+				$this->html_templates['form'],
+				$form_attributes,
+				implode("\n", $rows)
+			)
+			
 		);
 	}
 	
@@ -355,12 +372,26 @@ class markdown_parser{
 
 				if(
 					preg_match(
+						$this->patterns['form'],
+						$element,
+						$form
+					)
+				){
+					$attributes = explode('|', $form[1]);
+					$options = array();
+					foreach($attributes as $attribute){
+						list($name, $value) = explode(':', $attribute);
+						$options[$name] = $value;
+					}
+					$fields['form'] = $options;
+					continue;
+				} else if (
+					preg_match(
 						$this->patterns['title'],
 						$element,
 						$title
 					)
 				){
-					$options['match'] = 'title: ' . $this->patterns['title'];
 					$fields['title'] = $title[1];
 					continue;
 				} else if (
@@ -370,7 +401,6 @@ class markdown_parser{
 						$header
 					)
 				){
-					$options['match'] = 'header: ' . $this->patterns['header'];
 					$fields['header'] = $header[1];
 					continue;
 				} else if (
@@ -380,7 +410,6 @@ class markdown_parser{
 						$footer
 					)
 				){	
-					$options['match'] = 'footer: ' . $this->patterns['footer'];
 					$fields['footer'] = $footer[1];
 					continue;
 				} else if (
@@ -503,6 +532,9 @@ class markdown_parser{
 					$fields['errors'], sprintf("Line: '%s' does not match markdown pattern", $element)
 				);
 			}
+		}
+		if(empty($fields['form'])){
+			$fields['form'] = array();
 		}
 		return $fields;
 	}

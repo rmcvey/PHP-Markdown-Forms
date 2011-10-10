@@ -1,7 +1,7 @@
 <?php
 /*
 EXAMPLE SYNTAX/USAGE
------------------------------
+-----------------------------*/
 $content =<<<BEGIN
 form=action:processor.php|onsubmit:return check(this)|class:validate form|id:my_form|method:post
 form_title=This is my form
@@ -21,7 +21,7 @@ BEGIN;
 
 $markdown = new forms_markdown($content);
 print_r($markdown->toHTML());
-*/
+
 
 /**
 *	Markdown Class, front end for markdown_parser
@@ -97,31 +97,46 @@ class markdown_parser{
 	*	@param html_templates HTML templates that are loaded with parsed data on __toHTML call
 	*/
 	public $html_templates = array(
-		'container' => '<div id="md_form">
+		'container' => '<div id="md_form" class="md_form_container">
 				%s
 			</div>',
 		'form' => '<form%s>
 				%s
 			</form>',
-		'title' => '<h3>%s</h3>',
-		'header' => '<p>%s</p>',
-		'footer' => '<p>%s</p>',
-		'select' => '<div class="md_select md_element">
-				<select name="%s" class="%s" id="md_%s">%s</select>
+		'title' => '<div class="md_title_container">
+				<h3 class="md_title">%s</h3>
+			</div>',
+		'header' => '<div class="md_header_container">
+				<p class="md_header">%s</p>
+			</div>',
+		'footer' => '<p class="md_footer">%s</p>',
+		'element' => '<div class="md_element">
+				%s
+			</div>',
+		'select' => '<div class="md_select">
+				<select name="%s" class="%s md_select_element" id="md_%s">%s</select>
 			</div>',
 		'option' => '<option value="%s"%s>%s</option>',
-		'checkbox' => '<div class="md_checkbox md_element">
+		'checkboxgroup' => '<div class="md_checkboxgroup">
+				%s
+				%s
+			</div>',
+		'checkbox' => '<div class="md_checkbox md_subfield">
+				<input type="checkbox" class="%s md_checkbox_element" name="md_%s[]" value="%s"%s />
 				<span class="md_checkbox_label">%s</span>
-				<input type="checkbox" class="%s" name="md_%s[]" value="%s"%s />
 			</div>',
-		'radio' => '<div class="md_radio md_element">
+		'radiogroup' => '<div class="md_radiogroup">
+				%s
+				%s
+			</div>',
+		'radio' => '<div class="md_radio md_subfield">	
+				<input type="radio" class="%s md_radio_element" name="md_%s[]" value="%s"%s />
 				<span class="md_radio_label">%s</span>
-				<input type="radio" class="%s" name="md_%s[]" value="%s"%s />
 			</div>',
-		'label' => '<div class="md_label md_element">
-				<label for="md_%s">%s %s</label>
+		'label' => '<div class="md_label">
+				<label class="md_label_element">%s %s</label>
 			</div>',
-		'text' => '<div class="md_text md_element">
+		'text' => '<div class="md_text">
 				<input 
 					onfocus="if(this.value == \'%s\'){this.value=\'\';}" 
 					onblur="if(this.value == \'\'){this.value=\'%s\'}" 
@@ -129,18 +144,20 @@ class markdown_parser{
 					maxlength="%s" 
 					name="%s" 
 					id="md_%s" 
-					class="%s" 
+					class="%s md_text_element" 
 					value="%s" />
 			</div>',
-		'textarea' => '<div class="md_textarea md_element">
+		'textarea' => '<div class="md_textarea">
 				<textarea 
 					onfocus="if(this.value == \'%s\'){this.value=\'\';}" 
 					onblur="if(this.value == \'\'){this.value=\'%s\'}" 
-					name="%s">%s</textarea>
+					name="%s"
+					class="md_textarea_element">%s</textarea>
 			</div>',
-		'submit' => '<div class="md_submit md_element">
-				<input type="submit" value="Submit" />
-			</div>'
+		'submit' => '<div class="md_submit">
+				<input type="submit" class="md_submit_element" value="Submit" />
+			</div>',
+		'required' => '<span class="md_req_star">*</span>'
 	);
 	
 	/**
@@ -182,13 +199,12 @@ class markdown_parser{
 							) 
 						);
 					}
-					$rows []= sprintf(
+					$label = sprintf(
 						$this->html_templates['label'],
 						$element['label'],
-						$element['label'],
-						$this->_convert_to_string($element['required'], '<span class="md_req_star">*</span>')
+						$this->_convert_to_string($element['required'], $this->html_templates['required'])
 					);
-					$rows []= vsprintf(
+					$row = vsprintf(
 						$this->html_templates['select'], 
 						array(
 							$element['label'], 
@@ -196,6 +212,16 @@ class markdown_parser{
 							$element['label'],
 							"\n\t" . implode("\n\t", $options) . "\n"
 						)
+					);
+					$element = sprintf(
+						"%s
+						%s",
+						$label,
+						$row
+					);
+					$rows []= sprintf(
+						$this->html_templates['element'],
+						$element
 					);
 					break;
 				case 'textarea':
@@ -208,13 +234,21 @@ class markdown_parser{
 							empty($element['default_text']) ? "" : $element['default_text']
 						)
 					);
-					$rows []= sprintf(
+					$label = sprintf(
 						$this->html_templates['label'],
 						$element['label'],
-						$element['label'],
-						$this->_convert_to_string($element['required'], '<span class="md_req_star">*</span>')
+						$this->_convert_to_string($element['required'], $this->html_templates['required'])
 					);
-					$rows []= $row;
+					$element = sprintf(
+						"%s
+						%s",
+						$label,
+						$row
+					);
+					$rows []= sprintf(
+						$this->html_templates['element'],
+						$element
+					);
 					break;
 				case 'checkbox':
 					$options = array();
@@ -222,21 +256,28 @@ class markdown_parser{
 						$options []= vsprintf(
 							$this->html_templates['checkbox'],
 							array(
-								trim($option['key']),
-								$this->_convert_to_string($element['required']),
+								$element['label'],
 								$element['label'],
 								$element['value'],
-								$this->_convert_to_string($option['checked'], ' checked="checked"')
+								$this->_convert_to_string($option['checked'], ' checked="checked"'),
+								trim($option['key'])
 							)
 						);
 					}
-					$rows []= sprintf(
+					$label = sprintf(
 						$this->html_templates['label'],
 						$element['label'],
-						$element['label'],
-						$this->_convert_to_string($element['required'], '<span class="md_req_star">*</span>')
+						$this->_convert_to_string($element['required'], $this->html_templates['required'])
 					);
-					$rows []= implode("\n", $options);
+					$field_options = implode("\n", $options);
+					$rows []= sprintf(
+						$this->html_templates['element'],
+						sprintf(
+							$this->html_templates['checkboxgroup'],
+							$label,
+							$field_options
+						)
+					);
 					break;
 				case 'radio':
 					$options = array();
@@ -244,31 +285,37 @@ class markdown_parser{
 						$options []= vsprintf(
 							$this->html_templates['radio'],
 							array(
-								trim($option['key']),
 								$this->_convert_to_string($element['required']),
 								$element['label'],
-								$element['value'],
-								$this->_convert_to_string($option['checked'], ' checked="checked"')
+								trim($option['key']),
+								$this->_convert_to_string($option['checked'], ' checked="checked"'),
+								$option['value']
 							)
 						);
 					}
-					$rows []= sprintf(
+					$label = sprintf(
 						$this->html_templates['label'],
 						$element['label'],
-						$element['label'],
-						$this->_convert_to_string($element['required'], '<span class="md_req_star">*</span>')
+						$this->_convert_to_string($element['required'], $this->html_templates['required'])
 					);
-					$rows []= implode("\n", $options);
+					$field_options = implode("\n", $options);
+					$rows []= sprintf(
+						$this->html_templates['element'],
+						sprintf(
+							$this->html_templates['radiogroup'],
+							$label,
+							$field_options
+						)
+					);
 					break;
 					break;
 				case 'text':
-					$rows []= sprintf(
+					$label = sprintf(
 						$this->html_templates['label'],
 						$element['label'],
-						$element['label'],
-						$this->_convert_to_string($element['required'], '<span class="md_req_star">*</span>')
+						$this->_convert_to_string($element['required'], $this->html_templates['required'])
 					);
-			    	$rows []= vsprintf(
+					$element = sprintf("%s\n%s", $label, vsprintf(
 						$this->html_templates['text'],
 						array(
 							$element['default_text'],
@@ -279,6 +326,10 @@ class markdown_parser{
 							$this->_convert_to_string($element['required']),
 							$element['default_text']
 						)
+					));
+			    	$rows []= sprintf(
+						$this->html_templates['element'],
+						$element
 					);
 					break;
 				default:
@@ -286,7 +337,10 @@ class markdown_parser{
 			}
 		}
 		if(!empty($rows)){
-			$rows []= $this->html_templates['submit'];	
+			$rows []= sprintf(
+				$this->html_templates['element'],
+				$this->html_templates['submit']
+			);
 		}
 		if(isset($data['footer'])){
 			$rows []= sprintf(

@@ -1,23 +1,19 @@
 #Usage
 ---
 <?php  
-$data =<<< DATA
+$data =<<< DATA  
 form_title=This is my form  
 form_header=Fill out this form and magic will happen  
 form_footer=Thanks for filling out our form  
 First Name\*=\__\__[50]  
 Last Name\*=\__\__[50]  
-Phone=\__\__(444) 555 - 5555
-DATA;
-
+Phone=\__\__(444) 555 - 5555  
+DATA;  
+  
 $markdown = new forms_markdown($data);  
 echo $markdown->toHTML();  
-print_r(  
-	$markdown->toArray()  
-);  
-print_r(  
-	$markdown->toObject()  
-);  
+print_r( $markdown->toArray() );  
+print_r( $markdown->toObject() );  
 echo $markdown->toJSON();  
   
 ?>  

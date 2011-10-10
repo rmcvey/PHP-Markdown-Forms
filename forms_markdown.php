@@ -6,6 +6,7 @@ $content =<<<BEGIN
 form_title=This is my form
 form_header=Fill out this form and magic will happen
 form_footer=Thanks for filling out our form
+form=action:processor.php|onsubmit:return check(this)|class:validate form|id:my_form
 First Name*=__[50]
 Last Name*=_____[50]
 Phone*=__(444) 555 - 5555

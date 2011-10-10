@@ -1,4 +1,28 @@
-#Markdown
+#Usage
+---
+<?php  
+$data =<<< DATA
+form_title=This is my form  
+form_header=Fill out this form and magic will happen  
+form_footer=Thanks for filling out our form  
+First Name\*=\__\__[50]  
+Last Name\*=\__\__[50]  
+Phone=\__\__(444) 555 - 5555
+DATA;
+
+$markdown = new forms_markdown($data);  
+echo $markdown->toHTML();  
+print_r(  
+	$markdown->toArray()  
+);  
+print_r(  
+	$markdown->toObject()  
+);  
+echo $markdown->toJSON();  
+  
+?>  
+
+#Form Markdown
 ##Form Metadata
 ---
 * form_title=My Form Title
@@ -37,13 +61,13 @@ phones = [] Android [x] iPhone [x] Blackberry
 form_title=This is my form  
 form_header=Fill out this form and magic will happen  
 form_footer=Thanks for filling out our form  
-First Name\*=____[50]  
-Last Name\*=____[50]  
-Phone=____(444) 555 - 5555  
-Address=__  
-City=__  
-State=__[2]  
-Are you interested?*= (x) yes () no () not sure  
-How many do you want?*= [x] 10 [] 5 [] 2 [] 0  
+First Name\*=\__\__[50]  
+Last Name\*=\__\__[50]  
+Phone=\__\__(444) 555 - 5555  
+Address=\__  
+City=\__  
+State=\__[2]  
+Are you interested?\*= (x) yes () no () not sure  
+How many do you want?\*= [x] 10 [] 5 [] 2 [] 0  
 When do you want it?={(Now), Tomorrow, Never}  
 Comments=”Enter any comments you have for us”

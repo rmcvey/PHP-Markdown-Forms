@@ -21,8 +21,8 @@ BEGIN;
 
 $markdown = new forms_markdown($content);
 print_r($markdown->toHTML());
-
 */
+
 /**
 *	Markdown Class, front end for markdown_parser
 *	@author Rob McVey
@@ -72,9 +72,9 @@ class forms_markdown{
 */
 class markdown_parser{
 	/**
-	*	queue object used to iterate over loaded Markdown
+	*	array used to iterate over loaded Markdown
 	*/
-	private $markdown;
+	private $markdown = array();
 	/**
 	*	@param patterns Regex patterns to parse Markdown
 	*/
@@ -164,9 +164,8 @@ class markdown_parser{
 	*	@param [array] lines of markup text
 	*/
 	public function __construct($lines){
-		$this->markdown = new queue();
 		foreach($lines as $line){
-			$this->markdown->enqueue($line);
+			array_push($this->markdown, $line);
 		}
 	}
 	
@@ -369,39 +368,6 @@ class markdown_parser{
 		);
 	}
 	
-	/**
-	*	@param boolean val Value to test
-	*	@param string replacement What the value should be replaced with if it's true
-	*	@return string 'required' or supplied replacement string
-	*/
-	private function _convert_to_string($val, $replacement='required'){
-		if($val === true){
-			return $replacement;
-		}else{
-			return "";
-		}
-	}
-	
-	/**
-	*	Converts parsed Markdown into a JSON string
-	*	@return string JSON blob
-	*/
-	public function __toJSON(){
-		return json_encode(
-			$this->parse()
-		);
-	}
-	
-	/**
-	*	Converts parsed Markdown into a stdObject object
-	*	@return object
-	*/
-	public function __toObject(){
-		return json_decode(
-			$this->__toJSON()
-		);
-	}
-	
 	// parses markdown text against patterns
 	public function parse(){
 		//container for elements and errors that are returned
@@ -409,7 +375,7 @@ class markdown_parser{
 			'elements' => array(),
 			'errors' => array()
 		);
-		while($element = $this->markdown->dequeue()){
+		while($element = array_shift($this->markdown)){
 			if(
 				preg_match(
 					$this->patterns['line_match'], 
@@ -596,20 +562,38 @@ class markdown_parser{
 		}
 		return $fields;
 	}
-}
-
-/**
-*	Just a queue, that is all.
-*/
-class queue{
-	private $queue = array();
-	public function __construct(){}
-	public function enqueue($var){
-		array_push($this->queue, $var);
-		return (count($this->queue) - 1);
+	
+	/**
+	*	@param boolean val Value to test
+	*	@param string replacement What the value should be replaced with if it's true
+	*	@return string 'required' or supplied replacement string
+	*/
+	private function _convert_to_string($val, $replacement='required'){
+		if($val === true){
+			return $replacement;
+		}else{
+			return "";
+		}
 	}
-	public function dequeue(){
-		return array_shift($this->queue);
+	
+	/**
+	*	Converts parsed Markdown into a JSON string
+	*	@return string JSON blob
+	*/
+	public function __toJSON(){
+		return json_encode(
+			$this->parse()
+		);
+	}
+	
+	/**
+	*	Converts parsed Markdown into a stdObject object
+	*	@return object
+	*/
+	public function __toObject(){
+		return json_decode(
+			$this->__toJSON()
+		);
 	}
 }
 

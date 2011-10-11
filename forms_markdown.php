@@ -375,7 +375,7 @@ class markdown_parser{
 			'elements' => array(),
 			'errors' => array()
 		);
-		while($element = array_shift($this->markdown)){
+		foreach($this->markdown as $element){
 			if(
 				preg_match(
 					$this->patterns['line_match'], 

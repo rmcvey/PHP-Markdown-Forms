@@ -193,10 +193,65 @@ class markdown_parser{
 					$rows[] = $this->build_textarea($element);
 					break;
 				case 'checkbox':
-					$rows[] = $this->build_checkbox_input($element);
+
+					$options = array();
+					foreach($element['options'] as $option){
+						$options []= vsprintf(
+							$this->html_templates['checkbox'],
+							array(
+								$element['label'],
+								$option['value'],
+								$this->_convert_to_string($option['checked'], ' checked="checked"'),
+								trim($option['key'])
+							)
+						);
+					}
+					$label = sprintf(
+						$this->html_templates['label'],
+						$element['label'],
+						$this->_convert_to_string($element['required'], $this->html_templates['required'])
+					);
+					$field_options = implode("\n", $options);
+					$rows []= sprintf(
+						$this->html_templates['element'],
+						sprintf(
+							$this->html_templates['checkboxgroup'],
+							$this->_convert_to_string($element['required']),
+							$label,
+							$field_options
+						)
+					);
 					break;
 				case 'radio':
-					$rows[] = $this->build_radio_input($element);
+					$options = array();
+					foreach($element['options'] as $option){
+						$options []= vsprintf(
+							$this->html_templates['radio'],
+							array(
+								$element['label'],
+								trim($option['key']),
+								$this->_convert_to_string($option['checked'], ' checked="checked"'),
+								$option['value']
+							)
+						);
+					}
+					$label = sprintf(
+						$this->html_templates['label'],
+						$element['label'],
+						$this->_convert_to_string($element['required'], $this->html_templates['required'])
+					);
+					$field_options = implode("\n", $options);
+					$rows []= sprintf(
+						$this->html_templates['element'],
+						sprintf(
+							$this->html_templates['radiogroup'],
+							$this->_convert_to_string($element['required']),
+							$label,
+							$field_options
+						)
+					);
+					break;
+
 					break;
 				case 'text':
 					$rows[] = $this->build_text_input($element);

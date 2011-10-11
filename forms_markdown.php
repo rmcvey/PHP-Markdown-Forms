@@ -2,7 +2,7 @@
 /*
 EXAMPLE SYNTAX/USAGE
 form=action:processor.php|onsubmit:return check(this)|class:validate form|id:my_form|method:post
------------------------------
+-----------------------------*/
 $content =<<<BEGIN
 form_title=This is my form
 form_header=Fill out this form and magic will happen
@@ -21,7 +21,7 @@ BEGIN;
 
 $markdown = new forms_markdown($content);
 print_r($markdown->toHTML());
-*/
+
 
 /**
 *	Markdown Class, front end for markdown_parser
@@ -117,20 +117,20 @@ class markdown_parser{
 				<select name="%s" class="%s md_select_element" id="md_%s">%s</select>
 			</div>',
 		'option' => '<option value="%s"%s>%s</option>',
-		'checkboxgroup' => '<div class="md_checkboxgroup">
+		'checkboxgroup' => '<div class="md_checkboxgroup %s">
 				%s
 				%s
 			</div>',
 		'checkbox' => '<div class="md_checkbox md_subfield">
-				<input type="checkbox" class="%s md_checkbox_element" name="md_%s[]" value="%s"%s />
+				<input type="checkbox" class="md_checkbox_element" name="md_%s[]" value="%s"%s />
 				<span class="md_checkbox_label">%s</span>
 			</div>',
-		'radiogroup' => '<div class="md_radiogroup">
+		'radiogroup' => '<div class="md_radiogroup %s">
 				%s
 				%s
 			</div>',
 		'radio' => '<div class="md_radio md_subfield">	
-				<input type="radio" class="%s md_radio_element" name="md_%s[]" value="%s"%s />
+				<input type="radio" class="md_radio_element" name="md_%s[]" value="%s"%s />
 				<span class="md_radio_label">%s</span>
 			</div>',
 		'label' => '<div class="md_label">
@@ -256,8 +256,7 @@ class markdown_parser{
 							$this->html_templates['checkbox'],
 							array(
 								$element['label'],
-								$element['label'],
-								$element['value'],
+								$option['value'],
 								$this->_convert_to_string($option['checked'], ' checked="checked"'),
 								trim($option['key'])
 							)
@@ -273,6 +272,7 @@ class markdown_parser{
 						$this->html_templates['element'],
 						sprintf(
 							$this->html_templates['checkboxgroup'],
+							$this->_convert_to_string($element['required']),
 							$label,
 							$field_options
 						)
@@ -284,7 +284,6 @@ class markdown_parser{
 						$options []= vsprintf(
 							$this->html_templates['radio'],
 							array(
-								$this->_convert_to_string($element['required']),
 								$element['label'],
 								trim($option['key']),
 								$this->_convert_to_string($option['checked'], ' checked="checked"'),
@@ -302,6 +301,7 @@ class markdown_parser{
 						$this->html_templates['element'],
 						sprintf(
 							$this->html_templates['radiogroup'],
+							$this->_convert_to_string($element['required']),
 							$label,
 							$field_options
 						)

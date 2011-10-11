@@ -353,15 +353,19 @@ class markdown_parser{
 			foreach($data['form'] as $key => $val){
 				$form_attributes .= " $key=\"$val\"";
 			}
+			return sprintf(
+				$this->html_templates['container'],
+				sprintf(
+					$this->html_templates['form'],
+					$form_attributes,
+					implode("\n", $rows)
+				)
+
+			);
 		}
 		return sprintf(
 			$this->html_templates['container'],
-			sprintf(
-				$this->html_templates['form'],
-				$form_attributes,
-				implode("\n", $rows)
-			)
-			
+			implode("\n", $rows)
 		);
 	}
 	

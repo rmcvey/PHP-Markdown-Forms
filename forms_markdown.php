@@ -1,9 +1,9 @@
 <?php
 /*
 EXAMPLE SYNTAX/USAGE
------------------------------*/
-$content =<<<BEGIN
 form=action:processor.php|onsubmit:return check(this)|class:validate form|id:my_form|method:post
+-----------------------------
+$content =<<<BEGIN
 form_title=This is my form
 form_header=Fill out this form and magic will happen
 form_footer=Thanks for filling out our form
@@ -22,7 +22,7 @@ BEGIN;
 $markdown = new forms_markdown($content);
 print_r($markdown->toHTML());
 
-
+*/
 /**
 *	Markdown Class, front end for markdown_parser
 *	@author Rob McVey
@@ -348,7 +348,7 @@ class markdown_parser{
 				$data['footer']
 			);
 		}
-		if(isset($data['form'])){
+		if(!empty($data['form'])){
 			$form_attributes = "";
 			foreach($data['form'] as $key => $val){
 				$form_attributes .= " $key=\"$val\"";

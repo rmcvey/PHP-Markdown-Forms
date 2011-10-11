@@ -2,7 +2,7 @@
 /*
 EXAMPLE SYNTAX/USAGE
 form=action:processor.php|onsubmit:return check(this)|class:validate form|id:my_form|method:post
------------------------------*/
+-----------------------------
 $content =<<<BEGIN
 form_title=This is my form
 form_header=Fill out this form and magic will happen
@@ -21,7 +21,7 @@ BEGIN;
 
 $markdown = new forms_markdown($content);
 print_r($markdown->toHTML());
-
+*/
 
 /**
 *	Markdown Class, front end for markdown_parser
@@ -125,7 +125,7 @@ class markdown_parser{
 				<input type="checkbox" class="md_checkbox_element" name="md_%s[]" value="%s"%s />
 				<span class="md_checkbox_label">%s</span>
 			</div>',
-		'radiogroup' => '<div class="md_radiogroup %s">
+		'radiogroup' => '<div class="md_radiogroup">
 				%s
 				%s
 			</div>',
@@ -193,65 +193,10 @@ class markdown_parser{
 					$rows[] = $this->build_textarea($element);
 					break;
 				case 'checkbox':
-
-					$options = array();
-					foreach($element['options'] as $option){
-						$options []= vsprintf(
-							$this->html_templates['checkbox'],
-							array(
-								$element['label'],
-								$option['value'],
-								$this->_convert_to_string($option['checked'], ' checked="checked"'),
-								trim($option['key'])
-							)
-						);
-					}
-					$label = sprintf(
-						$this->html_templates['label'],
-						$element['label'],
-						$this->_convert_to_string($element['required'], $this->html_templates['required'])
-					);
-					$field_options = implode("\n", $options);
-					$rows []= sprintf(
-						$this->html_templates['element'],
-						sprintf(
-							$this->html_templates['checkboxgroup'],
-							$this->_convert_to_string($element['required']),
-							$label,
-							$field_options
-						)
-					);
+					$rows[] = $this->build_checkbox_input($element);
 					break;
 				case 'radio':
-					$options = array();
-					foreach($element['options'] as $option){
-						$options []= vsprintf(
-							$this->html_templates['radio'],
-							array(
-								$element['label'],
-								trim($option['key']),
-								$this->_convert_to_string($option['checked'], ' checked="checked"'),
-								$option['value']
-							)
-						);
-					}
-					$label = sprintf(
-						$this->html_templates['label'],
-						$element['label'],
-						$this->_convert_to_string($element['required'], $this->html_templates['required'])
-					);
-					$field_options = implode("\n", $options);
-					$rows []= sprintf(
-						$this->html_templates['element'],
-						sprintf(
-							$this->html_templates['radiogroup'],
-							$this->_convert_to_string($element['required']),
-							$label,
-							$field_options
-						)
-					);
-					break;
-
+					$rows[] = $this->build_radio_input($element);
 					break;
 				case 'text':
 					$rows[] = $this->build_text_input($element);

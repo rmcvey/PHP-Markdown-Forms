@@ -2,7 +2,7 @@
 /*
 EXAMPLE SYNTAX/USAGE
 form=action:processor.php|onsubmit:return check(this)|class:validate form|id:my_form|method:post
------------------------------
+-----------------------------*/
 $content =<<<BEGIN
 form_title=This is my form
 form_header=Fill out this form and magic will happen
@@ -21,7 +21,7 @@ BEGIN;
 
 $markdown = new forms_markdown($content);
 print_r($markdown->toHTML());
-*/
+
 
 /**
 *	Markdown Class, front end for markdown_parser
@@ -125,7 +125,7 @@ class markdown_parser{
 				<input type="checkbox" class="md_checkbox_element" name="md_%s[]" value="%s"%s />
 				<span class="md_checkbox_label">%s</span>
 			</div>',
-		'radiogroup' => '<div class="md_radiogroup">
+		'radiogroup' => '<div class="md_radiogroup %s">
 				%s
 				%s
 			</div>',

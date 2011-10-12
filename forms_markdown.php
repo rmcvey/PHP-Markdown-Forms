@@ -114,7 +114,7 @@ class markdown_parser{
 				%s
 			</div>',
 		'select' => '<div class="md_select">
-				<select name="%s" class="%s md_select_element" id="md_%s">%s</select>
+				<select name="%s" class="%s md_select_element">%s</select>
 			</div>',
 		'option' => '<option value="%s"%s>%s</option>',
 		'checkboxgroup' => '<div class="md_checkboxgroup %s">
@@ -122,7 +122,7 @@ class markdown_parser{
 				%s
 			</div>',
 		'checkbox' => '<div class="md_checkbox md_subfield">
-				<input type="checkbox" class="md_checkbox_element" name="md_%s[]" value="%s"%s />
+				<input type="checkbox" class="md_checkbox_element" name="md_%s" value="%s"%s />
 				<span class="md_checkbox_label">%s</span>
 			</div>',
 		'radiogroup' => '<div class="md_radiogroup %s">
@@ -130,7 +130,7 @@ class markdown_parser{
 				%s
 			</div>',
 		'radio' => '<div class="md_radio md_subfield">	
-				<input type="radio" class="md_radio_element" name="md_%s[]" value="%s"%s />
+				<input type="radio" class="md_radio_element" name="md_%s" value="%s"%s />
 				<span class="md_radio_label">%s</span>
 			</div>',
 		'label' => '<div class="md_label">
@@ -143,7 +143,6 @@ class markdown_parser{
 					type="text" 
 					maxlength="%s" 
 					name="%s" 
-					id="md_%s" 
 					class="%s md_text_element" 
 					value="%s" />
 			</div>',
@@ -261,7 +260,6 @@ class markdown_parser{
 		$row = vsprintf(
 			$this->html_templates['select'], 
 			array(
-				$element['label'], 
 				$element['required'], 
 				$element['label'],
 				"\n\t" . implode("\n\t", $options) . "\n"
@@ -346,14 +344,6 @@ class markdown_parser{
 	*	@return string html template for a radiogroup
 	*/
 	protected function build_radio_input($element){
-		//<div class="md_radiogroup">
-		//		%s
-		//		%s
-		//	</div>
-		//<div class="md_radiogroup %s">
-		//  	%s
-		//  	%s
-		//  </div>
 		$options = array();
 		foreach($element['options'] as $option){
 			$options []= vsprintf(
@@ -398,7 +388,6 @@ class markdown_parser{
 				$element['default_text'],
 				$element['default_text'],
 				$element['max_length'],
-				$element['label'],
 				$element['label'],
 				$this->_convert_to_string($element['required']),
 				$element['default_text']

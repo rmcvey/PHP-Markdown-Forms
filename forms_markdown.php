@@ -122,16 +122,16 @@ class markdown_parser{
 				%s
 			</div>',
 		'checkbox' => '<div class="md_checkbox md_subfield">
-				<input type="checkbox" class="md_checkbox_element" name="md_%s" value="%s"%s />
-				<span class="md_checkbox_label">%s</span>
+				<input type="checkbox" id="%s" class="md_checkbox_element" name="md_%s" value="%s"%s />
+				<label for="%s" class="md_checkbox_label">%s</label>
 			</div>',
 		'radiogroup' => '<div class="md_radiogroup %s">
 				%s
 				%s
 			</div>',
 		'radio' => '<div class="md_radio md_subfield">	
-				<input type="radio" class="md_radio_element" name="md_%s" value="%s"%s />
-				<span class="md_radio_label">%s</span>
+				<input type="radio" id="%s" class="md_radio_element" name="md_%s" value="%s"%s />
+				<label for="%s" class="md_radio_label">%s</label>
 			</div>',
 		'label' => '<div class="md_label">
 				<label class="md_label_element">%s %s</label>
@@ -312,13 +312,29 @@ class markdown_parser{
 	*/
 	protected function build_checkbox_input($element){
 		$options = array();
-		foreach($element['options'] as $option){
+		$friendly_name = preg_replace(
+			array(
+				'/[^A-Za-z0-9_\s]/', '/[\s]/', 
+			),
+			array(
+				'', '_'
+			),
+			strtolower($element['label'])
+		);
+		foreach($element['options'] as $option){	
+			$id = preg_replace(
+				array('/[^A-Za-z0-9_\s]/', '/[\s]/'), 
+				array('', '_'), 
+				sprintf('md_checkbox_%s_%s', $friendly_name, trim($option['value']))
+			);
 			$options []= vsprintf(
 				$this->html_templates['checkbox'],
 				array(
+					$id,
 					$element['label'],
 					$option['value'],
 					$this->_convert_to_string($option['checked'], ' checked="checked"'),
+					$id,
 					trim($option['key'])
 				)
 			);
@@ -345,13 +361,29 @@ class markdown_parser{
 	*/
 	protected function build_radio_input($element){
 		$options = array();
+		$friendly_name = preg_replace(
+			array(
+				'/[^A-Za-z0-9_\s]/', '/[\s]/', 
+			),
+			array(
+				'', '_'
+			),
+			strtolower($element['label'])
+		);
 		foreach($element['options'] as $option){
+			$id = preg_replace(
+				array('/[^A-Za-z0-9_\s]/', '/[\s]/'), 
+				array('', '_'), 
+				sprintf('md_radio_%s_%s', $friendly_name, trim($option['value']))
+			);
 			$options []= vsprintf(
 				$this->html_templates['radio'],
 				array(
+					$id,
 					$element['label'],
 					trim($option['key']),
 					$this->_convert_to_string($option['checked'], ' checked="checked"'),
+					$id,
 					$option['value']
 				)
 			);

@@ -104,7 +104,7 @@ class markdown_parser{
 		'radio' => "\t\t\t<div class=\"md_radio md_subfield\">\n\t\t\t\t<input type=\"radio\" id=\"%s\" class=\"md_radio_element\" name=\"md_%s\" value=\"%s\"%s />\n\t\t\t\t<label for=\"%s\" class=\"md_radio_label\">%s</label>\n\t\t\t</div>",
 		'label' => "<div class=\"md_label\">\n\t\t\t<label class=\"md_label_element\">%s %s</label>\n\t\t</div>",
 		'range' => "<div class=\"md_range\">\n\t\t\t%s <input class=\"md_range_element\" type=\"range\" name=\"%s\" min=\"%s\" max=\"%s\" step=\"%s\" value=\"%s\" /> %s</div>",
-		'toggle' => "<div class=\"md_toggle\" data-role=\"slider\">\n\t\t\t<select name=\"%s\" class=\"%s md_toggle_element\">\n\t\t\t\t%s\n\t\t\t</select>\n\t\t</div>",
+		'toggle' => "<div class=\"md_toggle\">\n\t\t\t<select data-role=\"slider\" name=\"%s\" class=\"%s md_toggle_element\">\n\t\t\t\t%s\n\t\t\t</select>\n\t\t</div>",
 		'text' => "\t\t<div class=\"md_text\">
 			<input 
 				onfocus=\"if(this.value == '%s'){this.value='';}\" 

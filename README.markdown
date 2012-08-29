@@ -5,9 +5,21 @@ $data =<<< DATA
 form_title=This is my form  
 form_header=Fill out this form and magic will happen  
 form_footer=Thanks for filling out our form  
-First Name\*=\__\__[50]  
-Last Name\*=\__\__[50]  
-Phone=\__\__(444) 555 - 5555  
+
+<div class="contact-container">
+	Phone*=__(444) 555 - 5555
+	Address=__
+	City=__
+	State=__[2]
+</div>
+
+How many do you want?*= [x] 10 [x] 5 [] 2 [] 0
+Lights=|on|off
+
+Slider*=5--10--50[5]
+When do you want it?={Now, (Tomorrow), Never}
+Comments="Enter any comments you have for us"
+
 DATA;  
   
 $markdown = new forms_markdown($data);  
@@ -47,6 +59,15 @@ phones = [] Android [x] iPhone [x] Blackberry
 * Form Name = _Enter your form name
 * name* = _Default text[50]
 
+##Range (slider): Double-dashes delimit min default and max, step in square brackets
+---
+* Price you would pay = 1--50--100
+* Increments of two that you would pay = --2--6--10[2]
+
+##Toggle (jQuery dependent): If using jqm, you will have a toggle element, other wise it's a select with two options
+---
+* Lights = |on|off
+
 ##Textarea: Quotes indicate textarea, text within quotes is used as default text
 ---
 * Comments = ""
@@ -54,6 +75,7 @@ phones = [] Android [x] iPhone [x] Blackberry
 
 ##Example Markup
 ---
+form=action:test.php|method:post|class:form-class
 form_title=This is my form  
 form_header=Fill out this form and magic will happen  
 form_footer=Thanks for filling out our form  

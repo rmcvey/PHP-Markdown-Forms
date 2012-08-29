@@ -20,7 +20,7 @@ Last Name*=_____[50]
 
 Are you interested?*= (x) yes () no () not sure
 How many do you want?*= [x] 10 [x] 5 [] 2 [] 0
-Lights=|on|off
+Lights*=|on|off
 
 Slider*=5--10--50[5]
 When do you want it?={Now, (Tomorrow), Never}

@@ -102,9 +102,11 @@ class markdown_parser{
 		'checkbox' => "\t\t\t<div class=\"md_checkbox md_subfield\">\n\t\t\t\t<input type=\"checkbox\" id=\"%s\" class=\"md_checkbox_element\" name=\"md_%s\" value=\"%s\"%s />\n\t\t\t\t<label for=\"%s\" class=\"md_checkbox_label\">%s</label>\n\t\t\t</div>",
 		'radiogroup' => "\t\t<div class=\"md_radiogroup %s\">\n%s\n\t\t</div>",
 		'radio' => "\t\t\t<div class=\"md_radio md_subfield\">\n\t\t\t\t<input type=\"radio\" id=\"%s\" class=\"md_radio_element\" name=\"md_%s\" value=\"%s\"%s />\n\t\t\t\t<label for=\"%s\" class=\"md_radio_label\">%s</label>\n\t\t\t</div>",
-		'label' => "<div class=\"md_label\">\n\t\t\t<label class=\"md_label_element\">%s %s</label>\n\t\t</div>",
-		'range' => "<div class=\"md_range\">\n\t\t\t%s <input class=\"md_range_element\" type=\"range\" name=\"%s\" min=\"%s\" max=\"%s\" step=\"%s\" value=\"%s\" /> %s</div>",
-		'toggle' => "<div class=\"md_toggle\">\n\t\t\t<select data-role=\"slider\" name=\"%s\" class=\"%s md_toggle_element\">\n\t\t\t\t%s\n\t\t\t</select>\n\t\t</div>",
+		'label' => "<div class=\"md_label\">\n\t\t\t<label for=\"%s\" class=\"md_label_element\">%s %s</label>\n\t\t</div>",
+		'range' => "<div class=\"md_range %s\">\n\t\t\t<span class=\"md_range_min\">%s</span>
+			<input class=\"md_range_element\" type=\"range\" name=\"%s\" min=\"%s\" max=\"%s\" step=\"%s\" value=\"%s\" />
+			<span class=\"md_range_max\">%s</span>",
+		'toggle' => "<div class=\"md_toggle %s\">\n\t\t\t<select data-role=\"slider\" name=\"%s\" class=\"%s md_toggle_element\">\n\t\t\t\t%s\n\t\t\t</select>\n\t\t</div>",
 		'text' => "\t\t<div class=\"md_text\">
 			<input 
 				onfocus=\"if(this.value == '%s'){this.value='';}\" 
@@ -226,6 +228,9 @@ class markdown_parser{
 	*	@return string html template for a select box
 	*/
 	private function _build_select($element){
+		$element['label'] = trim($element['label']);
+		$element['name'] = str_replace(' ', '_', $element['label']);
+		
 		$options = array();
 		foreach($element['options'] as $option){
 			$options []= vsprintf(
@@ -239,6 +244,7 @@ class markdown_parser{
 		}
 		$label = sprintf(
 			$this->html_templates['label'],
+			$element['name'],
 			$element['label'],
 			$this->_convert_to_string($element['required'], $this->html_templates['required'])
 		);
@@ -246,7 +252,7 @@ class markdown_parser{
 			$this->html_templates['select'], 
 			array(
 				$element['required'], 
-				$element['label'],
+				$element['name'],
 				implode("\n\t\t\t\t", $options)
 			)
 		);
@@ -267,12 +273,20 @@ class markdown_parser{
 	*	@return string html template for a range
 	*/
 	private function _build_range($element){
-		//<input class=\"md_range_element\" type=\"range\" name=\"%s\" min=\"%s\" max=\"%s\" step=\"%s\" value=\"%s\" />
+		/**
+		<span class=\"md_range_min\">%s</span>
+			<input class=\"md_range_element\" type=\"range\" name=\"%s\" min=\"%s\" max=\"%s\" step=\"%s\" value=\"%s\" />
+			<span class=\"md_range_max\">%s</div>",
+		*/
+		$element['label'] = trim($element['label']);
+		$element['name'] = str_replace(' ', '_', $element['label']);
+
 		$template = vsprintf(
 			$this->html_templates['range'],
 			array(
+				$this->_convert_to_string($element['required'], 'required'),
 				$element['options']['min'],
-				$element['label'],
+				$element['name'],
 				$element['options']['min'],
 				$element['options']['max'],
 				$element['options']['step'],
@@ -282,6 +296,7 @@ class markdown_parser{
 		);
 		$label = sprintf(
 			$this->html_templates['label'],
+			$element['name'],
 			$element['label'],
 			$this->_convert_to_string($element['required'], $this->html_templates['required'])
 		);
@@ -299,6 +314,9 @@ class markdown_parser{
 	*/
 	private function _build_toggle($element){
 		$options = array();
+		$element['label'] = trim($element['label']);
+		$element['name'] = str_replace(' ', '_', $element['label']);
+		
 		foreach($element['options'] as $option){
 			$options []= vsprintf(
 				$this->html_templates['option'],
@@ -311,14 +329,16 @@ class markdown_parser{
 		}
 		$label = sprintf(
 			$this->html_templates['label'],
+			$element['name'],
 			$element['label'],
 			$this->_convert_to_string($element['required'], $this->html_templates['required'])
 		);
 		$row = vsprintf(
 			$this->html_templates['toggle'], 
 			array(
-				$element['required'], 
-				strtolower($element['label']),
+				$this->_convert_to_string($element['required'], 'required'),
+				$element['name'], 
+				$element['name'],
 				implode("\n\t\t\t\t", $options)
 			)
 		);
@@ -338,17 +358,21 @@ class markdown_parser{
 	*	@return string html template for a textarea
 	*/
 	private function _build_textarea($element){
+		$element['label'] = trim($element['label']);
+		$element['name'] = str_replace(' ', '_', $element['label']);
+		
 		$row = vsprintf(
 			$this->html_templates['textarea'],
 			array(
 				$element['default_text'],
 				$element['default_text'],
-				$element['label'],
+				$element['name'],
 				empty($element['default_text']) ? "" : $element['default_text']
 			)
 		);
 		$label = sprintf(
 			$this->html_templates['label'],
+			$element['name'],
 			$element['label'],
 			$this->_convert_to_string($element['required'], $this->html_templates['required'])
 		);
@@ -363,6 +387,9 @@ class markdown_parser{
 	*	@return string html template for a checkbox (or checkgroup)
 	*/
 	private function _build_checkbox_input($element){
+		$element['label'] = trim($element['label']);
+		$element['name'] = str_replace(' ', '_', $element['label']);
+		
 		$options = array();
 		$friendly_name = preg_replace(
 			array(
@@ -383,7 +410,7 @@ class markdown_parser{
 				$this->html_templates['checkbox'],
 				array(
 					$id,
-					$element['label'],
+					$element['name'],
 					$option['value'],
 					$this->_convert_to_string($option['checked'], ' checked="checked"'),
 					$id,
@@ -393,6 +420,7 @@ class markdown_parser{
 		}
 		$label = sprintf(
 			$this->html_templates['label'],
+			$element['name'],
 			$element['label'],
 			$this->_convert_to_string($element['required'], $this->html_templates['required'])
 		);
@@ -411,6 +439,9 @@ class markdown_parser{
 	*	@return string html template for a radiogroup
 	*/
 	private function _build_radio_input($element){
+		$element['label'] = trim($element['label']);
+		$element['name'] = str_replace(' ', '_', $element['label']);
+		
 		$options = array();
 		$friendly_name = preg_replace(
 			array(
@@ -431,7 +462,7 @@ class markdown_parser{
 				$this->html_templates['radio'],
 				array(
 					$id,
-					$element['label'],
+					$element['name'],
 					trim($option['key']),
 					$this->_convert_to_string($option['checked'], ' checked="checked"'),
 					$id,
@@ -441,6 +472,7 @@ class markdown_parser{
 		}
 		$label = sprintf(
 			$this->html_templates['label'],
+			$element['name'],
 			$element['label'],
 			$this->_convert_to_string($element['required'], $this->html_templates['required'])
 		);
@@ -459,8 +491,12 @@ class markdown_parser{
 	*	@return string html template for a text box
 	*/
 	private function _build_text_input($element){
+		$element['label'] = trim($element['label']);
+		$element['name'] = str_replace(' ', '_', $element['label']);
+		
 		$label = sprintf(
 			$this->html_templates['label'],
+			$element['name'],
 			$element['label'],
 			$this->_convert_to_string($element['required'], $this->html_templates['required'])
 		);
@@ -470,7 +506,7 @@ class markdown_parser{
 				$element['default_text'],
 				$element['default_text'],
 				$element['max_length'],
-				$element['label'],
+				$element['name'],
 				$this->_convert_to_string($element['required']),
 				$element['default_text']
 			)

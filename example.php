@@ -10,17 +10,24 @@ form_header=Fill out this form and magic will happen
 form_footer=Thanks for filling out our form
 First Name*=__[50]
 Last Name*=_____[50]
-Phone*=__(444) 555 - 5555
-Address=__
-City=__
-State=__[2]
+
+<div class="contact-container">
+	Phone*=__(444) 555 - 5555
+	Address=__
+	City=__
+	State=__[2]
+</div>
+
 Are you interested?*= (x) yes () no () not sure
 How many do you want?*= [x] 10 [x] 5 [] 2 [] 0
+Lights=|on|off
+
+Slider*=5--10--50[5]
 When do you want it?={Now, (Tomorrow), Never}
 Comments="Enter any comments you have for us"
 BEGIN;
 
 $markdown = new forms_markdown($content);
-echo($markdown);
+print_r($markdown->toHTML());
 
 ?>

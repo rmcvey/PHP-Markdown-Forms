@@ -7,9 +7,9 @@ class forms_markdown extends markdown_parser{
 	/**
 	*	@param string content Markdown content
 	*/
-	public function __construct($content){	
+	public function __construct($content, $options = array()){	
 		$lines = explode("\n", $content);	
-		parent::__construct($lines);
+		parent::__construct($lines, $options);
 	}
 	
 	/**
@@ -48,14 +48,28 @@ class forms_markdown extends markdown_parser{
 */
 class markdown_parser{
 	/**
+	*	options to set for the form programmatically
+	*/
+	private $options = array(
+		'extra-attributes' => array(
+			'elems' => array(),
+			'labels' => array(),
+			'container' => array()
+		)
+	);
+	/**
 	*	array used to iterate over loaded Markdown
 	*/
 	private $markdown = array();
 	/**
+	*	cache to prevent rerunning the same parsed text
+	*/
+	private $cache = array();
+	/**
 	*	@param patterns Regex patterns to parse Markdown
 	*/
 	private $patterns = array(
-		'line_match' => '/([a-zA-Z,\#\%\&\?\(\)0-9_\/<>\;\'\"\s\-]*)([\*]?)[\s]*=[\s]*(.*)/',
+		'line_match' => '/\|?([a-zA-Z,\#\%\&\?\(\)0-9_\/<>\;\'\"\s\-]*)([\*]?)[\s]*=[\s]*(.*)/',
 		// metadata patterns
 		'title' => '/form_title[\s]*=[\s]*([a-zA-Z\/<>0-9\s\?\#\&\;]*)/',
 		'header' => '/form_header[\s]*=[\s]*([a-zA-Z0-9\s\?\#\&\;]*)/',
@@ -67,7 +81,10 @@ class markdown_parser{
 		'checkbox' => '/\[([x]*)\][\s]*([a-zA-Z\_\-0-9\'\"\s]*)/', 
 		'radio' => '/\(([x]*)\)[\s]*([a-zA-Z\_\-0-9\'\"\s]*)/',
 		'text' => '/([_]+)[_]*([a-zA-Z,\#\%\&\(\)0-9_\'\s\-]*)\[?([0-9]*)\]?/',
-		'textarea' => '/[”"]+(.*)["”]+/'
+		'textarea' => '/[”"]+(.*)["”]+/',
+		'range' => '/[-]{0,2}([0-9]*)--([0-9]*)(?:--([0-9]*))?(\[([0-9]*)\])?/',
+		'toggle' => '/\|(.*)\|(.*)/',
+		'rawhtml' => '/[\s]*\<[\/]?.*>\s?/'
 	);
 	/**
 	*	@param html_templates HTML templates that are loaded with parsed data on __toHTML call
@@ -76,8 +93,8 @@ class markdown_parser{
 		'container' => "<div id=\"md_form\" class=\"md_form_container\">\n\t%s\n</div>",
 		'form' => "<form%s>\n\t%s\n</form>",
 		'title' => "<div class=\"md_title_container\">\n\t\t<h3 class=\"md_title\">%s</h3>\n\t</div>",
-		'header' => "\t<div class=\"md_header_container\">\n\t\t<p class=\"md_header\">%s</p>\n\t</div>",
-		'footer' => "\t<div class=\"md_footer_container\">\n\t\t<p class=\"md_footer\">%s</p>\n\t</div>",
+		'header' => "\t<div class=\"md_header_container\">\n\t\t<div class=\"md_header\" data-role=\"header\">%s</div>\n\t</div>",
+		'footer' => "\t<div class=\"md_footer_container\">\n\t\t<div class=\"md_footer\" data-role=\"footer\">%s</div>\n\t</div>",
 		'element' => "\t<div class=\"md_element\">\n\t\t%s\n\t</div>",
 		'select' => "<div class=\"md_select\">\n\t\t\t<select name=\"%s\" class=\"%s md_select_element\">\n\t\t\t\t%s\n\t\t\t</select>\n\t\t</div>",
 		'option' => '<option value="%s"%s>%s</option>',
@@ -86,6 +103,8 @@ class markdown_parser{
 		'radiogroup' => "\t\t<div class=\"md_radiogroup %s\">\n%s\n\t\t</div>",
 		'radio' => "\t\t\t<div class=\"md_radio md_subfield\">\n\t\t\t\t<input type=\"radio\" id=\"%s\" class=\"md_radio_element\" name=\"md_%s\" value=\"%s\"%s />\n\t\t\t\t<label for=\"%s\" class=\"md_radio_label\">%s</label>\n\t\t\t</div>",
 		'label' => "<div class=\"md_label\">\n\t\t\t<label class=\"md_label_element\">%s %s</label>\n\t\t</div>",
+		'range' => "<div class=\"md_range\">\n\t\t\t%s <input class=\"md_range_element\" type=\"range\" name=\"%s\" min=\"%s\" max=\"%s\" step=\"%s\" value=\"%s\" /> %s</div>",
+		'toggle' => "<div class=\"md_toggle\" data-role=\"slider\">\n\t\t\t<select name=\"%s\" class=\"%s md_toggle_element\">\n\t\t\t\t%s\n\t\t\t</select>\n\t\t</div>",
 		'text' => "\t\t<div class=\"md_text\">
 			<input 
 				onfocus=\"if(this.value == '%s'){this.value='';}\" 
@@ -101,15 +120,20 @@ class markdown_parser{
 					name=\"%s\"
 					class=\"md_textarea_element\">%s</textarea>\n\t\t</div>",
 		'submit' => "<div class=\"md_submit\">\n\t\t\t<input type=\"submit\" class=\"md_submit_element\" value=\"Submit\" />\n\t\t</div>",
-		'required' => '<span class="md_req_star">*</span>'
+		'required' => '<span class="md_req_star">*</span>',
+		'rawhtml' => "\t\t%s\n"
 	);
 	
 	/**
 	*	@param [array] lines of markup text
 	*/
-	public function __construct($lines){
-		foreach($lines as $line){
-			array_push($this->markdown, $line);
+	public function __construct($lines, $options) {
+		$this->options = array_merge($this->options, $options);
+		
+		foreach($lines as $line) {
+			if(!empty($line)) {
+				array_push($this->markdown, $line);
+			}
 		}
 	}
 	
@@ -130,6 +154,9 @@ class markdown_parser{
 		}
 		foreach($data['elements'] as $index => $element){
 			switch($element['type']){
+				case 'rawhtml':
+					$rows[] = $this->_build_html($element);
+					break;
 				case 'select':
 					$rows[] = $this->_build_select($element);
 					break;
@@ -144,6 +171,12 @@ class markdown_parser{
 					break;
 				case 'text':
 					$rows[] = $this->_build_text_input($element);
+					break;
+				case 'range':
+					$rows[] = $this->_build_range($element);
+					break;
+				case 'toggle':
+					$rows[] = $this->_build_toggle($element);
 					break;
 				default:
 					break;
@@ -181,6 +214,13 @@ class markdown_parser{
 			implode("\n", $rows)
 		);
 	}
+
+	/**
+	*	@return string html
+	*/
+	private function _build_html($element){
+		return sprintf($this->html_templates['rawhtml'], $element['label']);
+	}
 	
 	/**
 	*	@return string html template for a select box
@@ -207,6 +247,78 @@ class markdown_parser{
 			array(
 				$element['required'], 
 				$element['label'],
+				implode("\n\t\t\t\t", $options)
+			)
+		);
+		$element = sprintf(
+			"%s
+			%s",
+			$label,
+			$row
+		);
+		return sprintf(
+			$this->html_templates['element'],
+			$element
+		);
+	}
+	
+	/**
+	*	HTML5 dependent
+	*	@return string html template for a range
+	*/
+	private function _build_range($element){
+		//<input class=\"md_range_element\" type=\"range\" name=\"%s\" min=\"%s\" max=\"%s\" step=\"%s\" value=\"%s\" />
+		$template = vsprintf(
+			$this->html_templates['range'],
+			array(
+				$element['options']['min'],
+				$element['label'],
+				$element['options']['min'],
+				$element['options']['max'],
+				$element['options']['step'],
+				$element['options']['value'],
+				$element['options']['max']
+			)
+		);
+		$label = sprintf(
+			$this->html_templates['label'],
+			$element['label'],
+			$this->_convert_to_string($element['required'], $this->html_templates['required'])
+		);
+		
+		$template = sprintf("%s\n%s", $label, $template);
+		return sprintf(
+			$this->html_templates['element'],
+			$template
+		);
+	}
+	
+	/**
+	*	jQuery dependent
+	*	@return string html template for a toggle
+	*/
+	private function _build_toggle($element){
+		$options = array();
+		foreach($element['options'] as $option){
+			$options []= vsprintf(
+				$this->html_templates['option'],
+				array(
+					ltrim($option['key']),
+					$this->_convert_to_string($option['selected'], ' selected="selected"'),
+					ltrim($option['value'])
+				) 
+			);
+		}
+		$label = sprintf(
+			$this->html_templates['label'],
+			$element['label'],
+			$this->_convert_to_string($element['required'], $this->html_templates['required'])
+		);
+		$row = vsprintf(
+			$this->html_templates['toggle'], 
+			array(
+				$element['required'], 
+				strtolower($element['label']),
 				implode("\n\t\t\t\t", $options)
 			)
 		);
@@ -369,10 +481,20 @@ class markdown_parser{
 		);
 	}
 	
-
+	private function is_cached(){
+		$key = md5(implode($this->markdown));
+		if(array_key_exists($key, $this->cache)){
+			return $this->cache[$key];
+		}
+		return false;
+	}
 	
 	// parses markdown text against patterns
 	protected function parse(){
+		// don't want to parse the same text again
+		if($cached = $this->is_cached()){
+			return $cached;
+		}
 		//container for elements and errors that are returned
 		$fields = array(
 			'elements' => array(),
@@ -384,15 +506,20 @@ class markdown_parser{
 					$this->patterns['line_match'], 
 					$element, 
 					$matches
+				) || 
+				preg_match(
+					$this->patterns['rawhtml'], 
+					$element, 
+					$matches
 				)
 			){	
 				$field = array(
-					'label' => $matches[1],
-					'required' => ($matches[2] == "*")
+					'label' => @$matches[1],
+					'required' => (@$matches[2] == "*")
 				);
 			
 				// This is the element declaration side of the matched element
-				$element_definition = $matches[3];
+				$element_definition = @$matches[3];
 			
 				// this will hold any options found in the rat's nest below
 				$options = array();
@@ -411,6 +538,19 @@ class markdown_parser{
 						$options[$name] = $value;
 					}
 					$fields['form'] = $options;
+					continue;
+				} else if(
+					preg_match(
+						$this->patterns['rawhtml'],
+						$element,
+						$html
+					)
+				){
+					$code = array(
+						'label' => $html[0],
+						'type' => 'rawhtml'
+					);
+					array_push($fields['elements'], $code);
 					continue;
 				} else if (
 					preg_match(
@@ -501,7 +641,47 @@ class markdown_parser{
 							'checked' => ($key === $checked) ? true : false
 						);
 					}
-				} else if (
+				} else if(
+					preg_match(
+						$this->patterns['range'],
+						$element_definition,
+						$range
+					)
+				) {
+					$field['type'] = 'range';
+					if(count($range) === 6){//a step value was passed
+						$step = $range[5];
+						$min = $range[1];
+						$max = $range[3];
+						$default = $range[2];
+					} else {
+						$min = $range[1];
+						$max = $range[3];
+						$default = $range[2];
+						$step = 1;
+					}
+					$options = array(
+						'min' => $min,
+						'max' => $max,
+						'value' => $default,
+						'step' => $step
+					);
+				} else if(
+						preg_match(
+							$this->patterns['toggle'],
+							$element_definition,
+							$toggle
+						)
+					) {
+						$field['type'] = 'toggle';
+						for($i = 1; $i <= 2; $i++){
+							$options[]= array(
+								'key' => $toggle[$i],
+								'value' => $toggle[$i],
+								'selected' => false
+							);
+						}
+				}else if (
 					preg_match_all(// Checkbox Matching
 						$this->patterns['checkbox'], 
 						$element_definition, 
@@ -563,6 +743,8 @@ class markdown_parser{
 		if(empty($fields['form'])){
 			$fields['form'] = array();
 		}
+		$key = md5(implode($this->markdown));
+		$this->cache[$key] = $fields;
 		return $fields;
 	}
 	

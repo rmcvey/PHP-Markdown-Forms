@@ -6,12 +6,12 @@ form_title=This is my form
 form_header=Fill out this form and magic will happen  
 form_footer=Thanks for filling out our form  
 
-<div class="contact-container">
+&lt;div class="contact-container"&gt;
 	Phone*=__(444) 555 - 5555
 	Address=__
 	City=__
 	State=__[2]
-</div>
+&lt;/div&gt;
 
 How many do you want?*= [x] 10 [x] 5 [] 2 [] 0
 Lights=|on|off

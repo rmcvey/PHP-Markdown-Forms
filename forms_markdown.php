@@ -640,7 +640,7 @@ class markdown_parser{
 						$value = explode('=>', $elements[$i]);
 						
 						// trim extra space around parsed text
-						array_walk(&$value, 'trim');
+						array_walk($value, 'trim');
 						
 						// if value is given without display value, set value to display value
 						if(count($value) == 1){
